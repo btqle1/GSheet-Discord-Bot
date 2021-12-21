@@ -3,7 +3,7 @@ import gspread
 import textwrap
 
 gc = gspread.service_account()
-sheet = gc.open_by_key('BOT TOKEN')
+sheet = gc.open_by_key('SHEET TOKEN')
 trait_worksheet = sheet.get_worksheet(0)
 character_worksheet = sheet.get_worksheet(2)
 
@@ -93,4 +93,4 @@ def find_data(message, trait_worksheet, character_worksheet):
     return 0, "asdf"
 
 client = MyClient()
-client.run("OTE3OTQ1NzI3ODQ4NjkzODIx.YbAFlA.Q_BtbFx7B4Kw4Bc8wD81W8J4j3A")
+client.run("BOT TOKEN")
