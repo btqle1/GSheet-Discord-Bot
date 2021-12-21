@@ -45,9 +45,11 @@ def create_embed2(skill_name, field_names, descriptions):
     embed = discord.Embed()
     embed.title = skill_name
     embed.description = descriptions[0]
-    for i in range(5):
-        embed.add_field(name=field_names[i],value=descriptions[i+1], inline=False)
-
+    embed.add_field(name=field_names[0], value=descriptions[1])
+    embed.add_field(name=field_names[1], value=descriptions[2])
+    embed.add_field(name=field_names[3], value=descriptions[4])
+    embed.add_field(name=field_names[2], value=descriptions[3], inline=False)
+    embed.add_field(name=field_names[4], value=descriptions[5], inline=False)
     return embed
 
 # try to code if effects reset after 9 lines
@@ -91,6 +93,9 @@ def format_trait3(worksheet, skill_name, position):
     # Effects
     val = worksheet.acell('F' + position).value
     desc[5] = val
+
+    x = len(desc[5].splitlines())
+    print(x)
 
     return create_embed2(skill_name, field_names, desc)
 
@@ -176,13 +181,13 @@ def format_position(letter, index):
 def find_data(message, trait_worksheet, character_worksheet):
     list_of_traits = trait_worksheet.col_values(1)
     for i in range(len(list_of_traits)):
-        print("Hello: " + str(i) + list_of_traits[i])
+        # print("Hello: " + str(i) + list_of_traits[i])
         if list_of_traits[i] == message:
             return i+1,"trait"
 
     list_of_names = character_worksheet.col_values(1)
     for i in range(len(list_of_names)):
-        print("Hello: " + str(i) + list_of_names[i])
+        # print("Hello: " + str(i) + list_of_names[i])
         if list_of_names[i] == message:
             return i+1,"character"
 
