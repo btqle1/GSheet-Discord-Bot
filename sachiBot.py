@@ -5,7 +5,10 @@ import textwrap
 gc = gspread.service_account()
 
 # Sheet Token is found in URL of the sheet
-sheet = gc.open_by_key('SHEET TOKEN')
+bot_token = 
+sheet_token = 
+
+sheet = gc.open_by_key(sheet_token)
 trait_worksheet = sheet.get_worksheet(0)
 character_worksheet = sheet.get_worksheet(2)
 
@@ -20,15 +23,16 @@ class MyClient(discord.Client):
             data = message.content[1:]
             position = find_data(data, trait_worksheet, character_worksheet)
             if position[1] == "trait":
-                message_array = format_trait2(trait_worksheet, data, position[0])
-                await message.channel.send(message_array[0])
-                await message.channel.send(message_array[1])
+                embed_var = format_trait3(trait_worksheet, data, position[0])
+                await message.channel.send(embed=embed_var)
 
             if position[1] == "character":
                 image = format_name(character_worksheet, position[0])
                 await message.channel.send(image)
             if position[1] == "asdf":
-                embed_var = create_embed()
+                embed_var = discord.Embed(title="adf", description="adsf")
+                embed_var.add_field(name="Test skill",value="Some text",inline=False)
+                embed_var.set_footer(text="asdfasdasf")
                 await message.channel.send(embed=embed_var)
 
 def create_embed(skill_name, description):
@@ -36,6 +40,59 @@ def create_embed(skill_name, description):
     embed.title = skill_name
     embed.description = description
     return embed
+
+def create_embed2(skill_name, field_names, descriptions):
+    embed = discord.Embed()
+    embed.title = skill_name
+    embed.description = descriptions[0]
+    for i in range(5):
+        embed.add_field(name=field_names[i],value=descriptions[i+1], inline=False)
+
+    return embed
+
+# try to code if effects reset after 9 lines
+def create_embed3():
+    return 0
+
+# Try to code if effects reset after 9 lines
+def format_trait4(worksheet, skill_name, position):
+    return 0
+
+def format_trait3(worksheet, skill_name, position):
+    desc = ["","","","","",""]
+    field_names = ["","","","",""]
+    position = str(position)
+    field_names[0] = level_cost = "Level Cost:"
+    field_names[1] = level_limit = "Level Limit:"
+    field_names[2] = requirements = "Requirements:"
+    field_names[3] = type = "Type:"
+    field_names[4] = effects = "Effects:"
+
+    # Description
+    val = worksheet.acell(format_position("G", position)).value
+    desc[0] = val
+
+    # Level Cost
+    val = worksheet.acell(format_position("B", position)).value
+    desc[1] = val
+
+    # Level Limit
+    val = worksheet.acell('C' + position).value
+    desc[2] = val
+
+    # Requirements
+    val = worksheet.acell('D' + position).value
+    desc[3] = val
+
+    # Type
+    val = worksheet.acell('E' + position).value
+    desc[4] = val
+
+    # Effects
+    val = worksheet.acell('F' + position).value
+    desc[5] = val
+
+    return create_embed2(skill_name, field_names, desc)
 
 def format_trait2(worksheet, skill_name, position):
     desc = ""
@@ -132,4 +189,4 @@ def find_data(message, trait_worksheet, character_worksheet):
     return 0, "asdf"
 
 client = MyClient()
-client.run("BOT TOKEN")
+client.run(bot_token)
