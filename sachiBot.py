@@ -3,7 +3,7 @@ import gspread
 import textwrap
 
 gc = gspread.service_account()
-sheet = gc.open_by_key('1nIWg-A5UKzDlmRCUFH2TAdFb6V7LNMPB41lbbBa1vtE')
+sheet = gc.open_by_key('BOT TOKEN')
 trait_worksheet = sheet.get_worksheet(0)
 character_worksheet = sheet.get_worksheet(2)
 
