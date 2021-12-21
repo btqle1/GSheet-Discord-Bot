@@ -29,11 +29,14 @@ class MyClient(discord.Client):
             if position[1] == "character":
                 image = format_name(character_worksheet, position[0])
                 await message.channel.send(image)
+            # asdf is for testing
             if position[1] == "asdf":
                 embed_var = discord.Embed(title="adf", description="adsf")
                 embed_var.add_field(name="Test skill",value="Some text",inline=False)
-                embed_var.set_footer(text="asdfasdasf")
+                embed_var2 = discord.Embed()
+                embed_var2.add_field(name="Test skill",value="Some more text",inline=False)
                 await message.channel.send(embed=embed_var)
+                await message.channel.send(embed=embed_var2)
 
 def create_embed(skill_name, description):
     embed = discord.Embed()
@@ -49,7 +52,32 @@ def create_embed2(skill_name, field_names, descriptions):
     embed.add_field(name=field_names[1], value=descriptions[2])
     embed.add_field(name=field_names[3], value=descriptions[4])
     embed.add_field(name=field_names[2], value=descriptions[3], inline=False)
-    embed.add_field(name=field_names[4], value=descriptions[5], inline=False)
+    if len(descriptions[5].splitlines()) > 10:
+        effects = descriptions[5].splitlines(True)
+        effect_split = ["",""]
+        for i in range(0,10):
+            effect_split[0] = effect_split[0] + effects[i]
+        for i in range(10,len(descriptions[5].splitlines())):
+            effect_split[1] = effect_split[1] + effects[i]
+        embed.add_field(name=field_names[4], value=effect_split[0], inline=False)
+        embed.add_field(name=field_names[4]+" (cont.)", value=effect_split[1], inline=False)
+    else:
+        embed.add_field(name=field_names[4], value=descriptions[5], inline=False)
+
+    # embed would be the discord.Embed instance
+    fields = [embed.title, embed.description, embed.footer.text, embed.author.name]
+
+    fields.extend([field.name for field in embed.fields])
+    fields.extend([field.value for field in embed.fields])
+
+    total = ""
+    for item in fields:
+        # If we str(discord.Embed.Empty) we get 'Embed.Empty', when
+        # we just want an empty string...
+        total += str(item) if str(item) != 'Embed.Empty' else ''
+
+    print(len(total))
+
     return embed
 
 # try to code if effects reset after 9 lines
