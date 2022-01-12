@@ -1,12 +1,22 @@
 import discord
 import gspread
 import textwrap
+from pathlib import Path
 
 gc = gspread.service_account()
 
 # Sheet Token is found in URL of the sheet
-bot_token = 
-sheet_token = 
+bot_token = ""
+sheet_token = ""
+p = Path(__file__).with_name('bot_token')
+with p.open('r') as f:
+    bot_token = f.readline()
+    f.close()
+
+p = Path(__file__).with_name('sheet_token')
+with p.open('r') as f:
+    sheet_token = f.readline()
+    f.close()
 
 sheet = gc.open_by_key(sheet_token)
 trait_worksheet = sheet.get_worksheet(0)
