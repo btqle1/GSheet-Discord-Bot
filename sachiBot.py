@@ -6,8 +6,8 @@ from pathlib import Path
 gc = gspread.service_account()
 
 # Sheet Token is found in URL of the sheet
-bot_token = ""
-sheet_token = ""
+
+
 p = Path(__file__).with_name('bot_token')
 with p.open('r') as f:
     bot_token = f.readline()
@@ -41,10 +41,10 @@ class MyClient(discord.Client):
                 await message.channel.send(image)
             # asdf is for testing
             if position[1] == "asdf":
-                embed_var = discord.Embed(title="adf", description="adsf")
-                embed_var.add_field(name="Test skill",value="Some text",inline=False)
+                embed_var = discord.Embed(title="adf", description="adsf", color=0x4000FF)
+                embed_var.add_field(name="Test skill",value="-Some text",inline=False)
                 embed_var2 = discord.Embed()
-                embed_var2.add_field(name="Test skill",value="Some more text",inline=False)
+                embed_var2.add_field(name="Test skill",value="``` -Some more text```",inline=False)
                 await message.channel.send(embed=embed_var)
                 await message.channel.send(embed=embed_var2)
 
@@ -53,6 +53,21 @@ def create_embed(skill_name, description):
     embed.title = skill_name
     embed.description = description
     return embed
+
+
+def format_effect_bullet(effect_line):
+    combined_effect_line = ''
+    initial_indent = ''
+    sub_indent = initial_indent + ' '
+    while (effect_line[1] == '-'):
+        effect_line = effect_line[1:]
+        initial_indent = sub_indent + ' '
+        sub_indent = initial_indent + ' '
+    effect_line = textwrap.wrap(text=effect_line, width=55, initial_indent=initial_indent, subsequent_indent=sub_indent)
+    for i in range(len(effect_line)):
+        combined_effect_line = combined_effect_line + effect_line[i] + '\n'
+    return combined_effect_line
+
 
 def create_embed2(skill_name, field_names, descriptions):
     embed = discord.Embed()
@@ -66,13 +81,20 @@ def create_embed2(skill_name, field_names, descriptions):
         effects = descriptions[5].splitlines(True)
         effect_split = ["",""]
         for i in range(0,10):
+            effects[i] = format_effect_bullet(effects[i])
             effect_split[0] = effect_split[0] + effects[i]
         for i in range(10,len(descriptions[5].splitlines())):
+            effects[i] = format_effect_bullet(effects[i])
             effect_split[1] = effect_split[1] + effects[i]
-        embed.add_field(name=field_names[4], value=effect_split[0], inline=False)
-        embed.add_field(name=field_names[4]+" (cont.)", value=effect_split[1], inline=False)
+        embed.add_field(name=field_names[4], value='```' + effect_split[0] + '```', inline=False)
+        embed.add_field(name=field_names[4]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
     else:
-        embed.add_field(name=field_names[4], value=descriptions[5], inline=False)
+        effects = descriptions[5].splitlines(True)
+        effect_split = ''
+        for i in range(len(descriptions[5].splitlines())):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split = effect_split + effects[i]
+        embed.add_field(name=field_names[4], value='```' + effect_split + '```', inline=False)
 
     # embed would be the discord.Embed instance
     fields = [embed.title, embed.description, embed.footer.text, embed.author.name]
