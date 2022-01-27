@@ -33,7 +33,7 @@ class MyClient(discord.Client):
             data = message.content[1:]
             position = find_data(data, trait_worksheet, character_worksheet)
             if position[1] == "trait":
-                embed_var = format_trait3(trait_worksheet, data, position[0])
+                embed_var = format_trait_knowledge(trait_worksheet, data, position[0])
                 await message.channel.send(embed=embed_var)
 
             if position[1] == "character":
@@ -47,13 +47,6 @@ class MyClient(discord.Client):
                 embed_var2.add_field(name="Test skill",value="``` -Some more text```",inline=False)
                 await message.channel.send(embed=embed_var)
                 await message.channel.send(embed=embed_var2)
-
-def create_embed(skill_name, description):
-    embed = discord.Embed()
-    embed.title = skill_name
-    embed.description = description
-    return embed
-
 
 def format_effect_bullet(effect_line):
     combined_effect_line = ''
@@ -117,10 +110,7 @@ def create_embed3():
     return 0
 
 # Try to code if effects reset after 9 lines
-def format_trait4(worksheet, skill_name, position):
-    return 0
-
-def format_trait3(worksheet, skill_name, position):
+def format_trait_social(worksheet, skill_name, position):
     desc = ["","","","","",""]
     field_names = ["","","","",""]
     position = str(position)
@@ -159,71 +149,44 @@ def format_trait3(worksheet, skill_name, position):
 
     return create_embed2(skill_name, field_names, desc)
 
-def format_trait2(worksheet, skill_name, position):
-    desc = ""
+def format_trait_knowledge(worksheet, skill_name, position):
+    desc = ["","","","","",""]
+    field_names = ["","","","",""]
     position = str(position)
-    level_cost = "Level Cost: "
-    level_limit = "Level Limit: "
-    requirements = "Requirements: "
-    type = "Type: "
-    effects = "Effects: \n"
+    field_names[0] = level_cost = "Level Cost:"
+    field_names[1] = level_limit = "Level Limit:"
+    field_names[2] = requirements = "Requirements:"
+    field_names[3] = type = "Type:"
+    field_names[4] = effects = "Effects:"
 
     # Description
     val = worksheet.acell(format_position("G", position)).value
-    desc = desc + val + '\n'
+    desc[0] = val
 
     # Level Cost
     val = worksheet.acell(format_position("B", position)).value
-    desc = desc + level_cost + val + '\n'
+    desc[1] = val
 
     # Level Limit
     val = worksheet.acell('C' + position).value
-    desc = desc + level_limit + val + '\n'
+    desc[2] = val
 
     # Requirements
     val = worksheet.acell('D' + position).value
-    desc = desc + requirements + val + '\n'
+    desc[3] = val
 
     # Type
     val = worksheet.acell('E' + position).value
-    desc = desc + type + val + '\n'
+    desc[4] = val
 
     # Effects
     val = worksheet.acell('F' + position).value
-    desc = desc + effects + val + '\n'
+    desc[5] = val
 
-    return create_embed(skill_name, desc)
+    x = len(desc[5].splitlines())
+    print(x)
 
-
-
-def format_trait(worksheet, skill_name, position):
-    position = str(position)
-    level_cost = "Level Cost: "
-    level_limit = "Level Limit: "
-    Requirements = "Requirements: "
-    Type = "Type: "
-    Effects = "Effects: \n"
-
-    message = ["",""]
-    message[0] = '```' "\n"
-    message[0] = message[0] + skill_name + "\n"
-    val = worksheet.acell(format_position("G",position)).value
-    message[0] = message[0] + val + '\n'
-    val = worksheet.acell(format_position("B",position)).value
-    message[0] = message[0] + '```'
-
-    message[1] = '```' + "\n"
-    message[1] = message[1] + level_cost + val + '\n'
-    val = worksheet.acell('C' + position).value
-    message[1] = message[1] + level_limit + val + '\n'
-    val = worksheet.acell('D' + position).value
-    message[1] = message[1] + Requirements + val + '\n'
-    val = worksheet.acell('E' + position).value
-    message[1] = message[1] + Type + val + '\n'
-    val = worksheet.acell('F' + position).value
-    message[1] = message[1] + Effects + val + '\n'
-    message[1] = message[1] + '```'
-    return message
+    return create_embed2(skill_name, field_names, desc)
 
 def format_name(worksheet, position):
     position = str(position)
