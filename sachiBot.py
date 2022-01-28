@@ -30,11 +30,17 @@ class MyClient(discord.Client):
         print('Message from {0.author}: {0.content}'.format(message))
 
         if message.content.startswith('!'):
-            data = message.content[1:]
+            data = message.content[1:].title()
             position = find_data(data, trait_worksheet, character_worksheet)
             if position[1] == "trait":
-                embed_var = format_trait_knowledge(trait_worksheet, data, position[0])
-                await message.channel.send(embed=embed_var)
+                # check for trait type
+                trait_type = trait_worksheet.acell('B' + str(position[0])).value
+                if trait_type == "Knowledge":
+                    embed_var = format_trait_knowledge(trait_worksheet, data, position[0])
+                    await message.channel.send(embed=embed_var)
+                if trait_type == "Social":
+                    embed_var = format_trait_social(trait_worksheet, data, position[0])
+                    await message.channel.send(embed=embed_var)
 
             if position[1] == "character":
                 image = format_name(character_worksheet, position[0])
@@ -61,8 +67,7 @@ def format_effect_bullet(effect_line):
         combined_effect_line = combined_effect_line + effect_line[i] + '\n'
     return combined_effect_line
 
-
-def create_embed2(skill_name, field_names, descriptions):
+def create_embed3(skill_name, field_names, descriptions):
     embed = discord.Embed()
     embed.title = skill_name
     embed.description = descriptions[0]
@@ -105,49 +110,105 @@ def create_embed2(skill_name, field_names, descriptions):
 
     return embed
 
-# try to code if effects reset after 9 lines
-def create_embed3():
-    return 0
+def create_embed2(skill_name, field_names, descriptions):
+    embed = discord.Embed()
+    embed.title = skill_name
+    embed.description = descriptions[0]
+    embed.add_field(name=field_names[0], value=descriptions[1])
+    embed.add_field(name=field_names[1], value=descriptions[2])
+    embed.add_field(name=field_names[3], value=descriptions[4])
+    embed.add_field(name=field_names[2], value=descriptions[3], inline=False)
+    if len(descriptions[5].splitlines()) > 10:
+        effects = descriptions[5].splitlines(True)
+        effect_split = ["",""]
+        for i in range(0,10):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split[0] = effect_split[0] + effects[i]
+        for i in range(10,len(descriptions[5].splitlines())):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split[1] = effect_split[1] + effects[i]
+        embed.add_field(name=field_names[4], value='```' + effect_split[0] + '```', inline=False)
+        embed.add_field(name=field_names[4]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
+    else:
+        effects = descriptions[5].splitlines(True)
+        effect_split = ''
+        for i in range(len(descriptions[5].splitlines())):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split = effect_split + effects[i]
+        embed.add_field(name=field_names[4], value='```' + effect_split + '```', inline=False)
 
-# Try to code if effects reset after 9 lines
+    # Used to get the length of entire discord embed
+    # # embed would be the discord.Embed instance
+    # fields = [embed.title, embed.description, embed.footer.text, embed.author.name]
+    #
+    # fields.extend([field.name for field in embed.fields])
+    # fields.extend([field.value for field in embed.fields])
+    #
+    # total = ""
+    # for item in fields:
+    #     # If we str(discord.Embed.Empty) we get 'Embed.Empty', when
+    #     # we just want an empty string...
+    #     total += str(item) if str(item) != 'Embed.Empty' else ''
+
+    # print(len(total))
+
+    return embed
+
 def format_trait_social(worksheet, skill_name, position):
     desc = ["","","","","",""]
     field_names = ["","","","",""]
     position = str(position)
     field_names[0] = level_cost = "Level Cost:"
     field_names[1] = level_limit = "Level Limit:"
-    field_names[2] = requirements = "Requirements:"
+    field_names[2] = disallowed = "Disallowed:"
     field_names[3] = type = "Type:"
-    field_names[4] = effects = "Effects:"
+    field_names[4] = timing = "Timing:"
+    field_names[5] = requirements = "Requirements:"
+    field_names[6] = players = "Player Character(s):"
+    field_names[7] = slots = "Player Slot(s):"
+    field_names[8] = effects = "Effects:"
 
     # Description
-    val = worksheet.acell(format_position("G", position)).value
+    val = worksheet.acell('L' + position).value
     desc[0] = val
 
     # Level Cost
-    val = worksheet.acell(format_position("B", position)).value
+    val = worksheet.acell('C' + position).value
     desc[1] = val
 
     # Level Limit
-    val = worksheet.acell('C' + position).value
+    val = worksheet.acell('D' + position).value
     desc[2] = val
 
-    # Requirements
-    val = worksheet.acell('D' + position).value
+    # Disallowed
+    val = worksheet.acell('E' + position).value
     desc[3] = val
 
     # Type
-    val = worksheet.acell('E' + position).value
+    val = worksheet.acell('J' + position).value
     desc[4] = val
 
-    # Effects
-    val = worksheet.acell('F' + position).value
+    # Timing
+    val = worksheet.acell('I' + position).value
     desc[5] = val
 
-    x = len(desc[5].splitlines())
-    print(x)
+    # Requirements
+    val = worksheet.acell('F' + position).value
+    desc[6] = val
 
-    return create_embed2(skill_name, field_names, desc)
+    # Players
+    val = worksheet.acell('G' + position).value
+    desc[7] = val
+
+    # Slots
+    val = worksheet.acell('H' + position).value
+    desc[8] = val
+
+    # Effects
+    val = worksheet.acell('K' + position).value
+    desc[9] = val
+
+    return create_embed3(skill_name, field_names, desc)
 
 def format_trait_knowledge(worksheet, skill_name, position):
     desc = ["","","","","",""]
@@ -160,27 +221,27 @@ def format_trait_knowledge(worksheet, skill_name, position):
     field_names[4] = effects = "Effects:"
 
     # Description
-    val = worksheet.acell(format_position("G", position)).value
+    val = worksheet.acell('H' + position).value
     desc[0] = val
 
     # Level Cost
-    val = worksheet.acell(format_position("B", position)).value
+    val = worksheet.acell('C' + position).value
     desc[1] = val
 
     # Level Limit
-    val = worksheet.acell('C' + position).value
+    val = worksheet.acell('D' + position).value
     desc[2] = val
 
     # Requirements
-    val = worksheet.acell('D' + position).value
+    val = worksheet.acell('E' + position).value
     desc[3] = val
 
     # Type
-    val = worksheet.acell('E' + position).value
+    val = worksheet.acell('F' + position).value
     desc[4] = val
 
     # Effects
-    val = worksheet.acell('F' + position).value
+    val = worksheet.acell('G' + position).value
     desc[5] = val
 
     x = len(desc[5].splitlines())
