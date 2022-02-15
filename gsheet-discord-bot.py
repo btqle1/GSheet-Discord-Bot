@@ -20,7 +20,9 @@ with p.open('r') as f:
 
 sheet = gc.open_by_key(sheet_token)
 trait_worksheet = sheet.get_worksheet(0)
-character_worksheet = sheet.get_worksheet(2)
+character_worksheet = sheet.get_worksheet(1)
+gear_worksheet = sheet.get_worksheet(2)
+
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -30,20 +32,25 @@ class MyClient(discord.Client):
         print('Message from {0.author}: {0.content}'.format(message))
 
         if message.content.startswith('!'):
+
             data = message.content[1:].title()
-            position = find_data(data, trait_worksheet, character_worksheet)
+            position = find_data(data, trait_worksheet, character_worksheet, gear_worksheet)
             if position[1] == "trait":
                 # check for trait type
                 trait_type = trait_worksheet.acell('B' + str(position[0])).value
-                if trait_type == "Knowledge":
-                    embed_var = format_trait_knowledge(trait_worksheet, data, position[0])
+                if trait_type == "Knowledge" or trait_type == "Skill":
+                    embed_var = format_trait_knowledge_skill(trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
-                if trait_type == "Social":
+                if trait_type == "Social" or trait_type == "Third Eye":
                     embed_var = format_trait_social(trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
 
             if position[1] == "character":
                 image = format_name(character_worksheet, position[0])
+                await message.channel.send(image)
+
+            if position[1] == "gear":
+                image = format_name(gear_worksheet, position[0])
                 await message.channel.send(image)
             # asdf is for testing
             if position[1] == "asdf":
@@ -101,7 +108,7 @@ def create_embed_social(skill_name, field_names, descriptions):
 
     return embed
 
-def create_embed_knowledge(skill_name, field_names, descriptions):
+def create_embed_knowledge_skill(skill_name, field_names, descriptions):
     embed = discord.Embed()
     embed.title = skill_name
     embed.description = descriptions[0]
@@ -109,15 +116,25 @@ def create_embed_knowledge(skill_name, field_names, descriptions):
     embed.add_field(name=field_names[1], value=descriptions[2])
     embed.add_field(name=field_names[3], value=descriptions[4])
     embed.add_field(name=field_names[2], value=descriptions[3], inline=False)
-    if len(descriptions[5].splitlines()) > 10:
+    desc_split_check = len(descriptions[5].splitlines())
+
+    if desc_split_check > 8:
         effects = descriptions[5].splitlines(True)
-        effect_split = ["",""]
-        for i in range(0,10):
+        effect_split = ["","",""]
+        for i in range(0, 8):
             effects[i] = format_effect_bullet(effects[i])
             effect_split[0] = effect_split[0] + effects[i]
-        for i in range(10,len(descriptions[5].splitlines())):
-            effects[i] = format_effect_bullet(effects[i])
-            effect_split[1] = effect_split[1] + effects[i]
+        if desc_split_check > 14:
+            for i in range(8, 14):
+                effects[i] = format_effect_bullet(effects[i])
+                effect_split[1] = effect_split[1] + effects[i]
+            for i in range(14, len(descriptions[5].splitlines())):
+                effects[i] = format_effect_bullet(effects[i])
+                effect_split[2] = effect_split[2] + effects[i]
+        else:
+            for i in range(8, len(descriptions[5].splitlines())):
+                effects[i] = format_effect_bullet(effects[i])
+                effect_split[1] = effect_split[1] + effects[i]
         embed.add_field(name=field_names[4], value='```' + effect_split[0] + '```', inline=False)
         embed.add_field(name=field_names[4]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
     else:
@@ -201,7 +218,7 @@ def format_trait_social(worksheet, skill_name, position):
 
     return create_embed_social(skill_name, field_names, desc)
 
-def format_trait_knowledge(worksheet, skill_name, position):
+def format_trait_knowledge_skill(worksheet, skill_name, position):
     desc = ["","","","","",""]
     field_names = ["","","","",""]
     position = str(position)
@@ -238,7 +255,7 @@ def format_trait_knowledge(worksheet, skill_name, position):
     x = len(desc[5].splitlines())
     print(x)
 
-    return create_embed_knowledge(skill_name, field_names, desc)
+    return create_embed_knowledge_skill(skill_name, field_names, desc)
 
 def format_name(worksheet, position):
     position = str(position)
@@ -253,18 +270,25 @@ def format_position(letter, index):
     cell = letter + index
     return cell
 
-def find_data(message, trait_worksheet, character_worksheet):
+def find_data(message, trait_worksheet, character_worksheet, gear_worksheet):
     list_of_traits = trait_worksheet.col_values(1)
+    message = message.lower()
     for i in range(len(list_of_traits)):
         # print("Hello: " + str(i) + list_of_traits[i])
-        if list_of_traits[i] == message:
+        if list_of_traits[i].lower() == message:
             return i+1,"trait"
 
     list_of_names = character_worksheet.col_values(1)
     for i in range(len(list_of_names)):
         # print("Hello: " + str(i) + list_of_names[i])
-        if list_of_names[i] == message:
+        if list_of_names[i].lower() == message:
             return i+1,"character"
+
+    list_of_names = gear_worksheet.col_values(1)
+    for i in range(len(list_of_names)):
+        # print("Hello: " + str(i) + list_of_names[i])
+        if list_of_names[i].lower() == message:
+            return i+1,"gear"
 
     return 0, "asdf"
 
