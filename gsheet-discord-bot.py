@@ -41,8 +41,20 @@ class MyClient(discord.Client):
                 if trait_type == "Knowledge" or trait_type == "Skill":
                     embed_var = format_trait_knowledge_skill(trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
-                if trait_type == "Social" or trait_type == "Third Eye":
+                elif trait_type == "Social":
                     embed_var = format_trait_social(trait_worksheet, data, position[0])
+                    await message.channel.send(embed=embed_var)
+                elif trait_type == "Third Eye":
+                    embed_var = format_trait_eye(trait_worksheet, data, position[0])
+                    await message.channel.send(embed=embed_var)
+                elif trait_type == "Sink":
+                    embed_var = format_trait_sink(trait_worksheet, data, position[0])
+                    await message.channel.send(embed=embed_var)
+                elif trait_type == "Equipment":
+                    embed_var = format_trait_equip(trait_worksheet, data, position[0])
+                    await message.channel.send(embed=embed_var)
+                elif trait_type == "Advanced Equipment":
+                    embed_var = format_trait_adv_equip(trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
 
             if position[1] == "character":
@@ -73,6 +85,40 @@ def format_effect_bullet(effect_line):
     for i in range(len(effect_line)):
         combined_effect_line = combined_effect_line + effect_line[i] + '\n'
     return combined_effect_line
+
+def create_embed_eye(skill_name, field_names, descriptions):
+    embed = discord.Embed()
+    embed.title = skill_name
+    embed.description = descriptions[0]
+    embed.add_field(name=field_names[0], value=descriptions[1])
+    embed.add_field(name=field_names[1], value=descriptions[2])
+    embed.add_field(name=field_names[2], value=descriptions[3])
+    embed.add_field(name=field_names[3], value=descriptions[4])
+    embed.add_field(name=field_names[4], value=descriptions[5])
+    embed.add_field(name=field_names[5], value=descriptions[6], inline=False)
+    embed.add_field(name=field_names[6], value=descriptions[7])
+    embed.add_field(name=field_names[7], value=descriptions[8])
+
+    if len(descriptions[9].splitlines()) > 10:
+        effects = descriptions[9].splitlines(True)
+        effect_split = ["",""]
+        for i in range(0,10):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split[0] = effect_split[0] + effects[i]
+        for i in range(10,len(descriptions[9].splitlines())):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split[1] = effect_split[1] + effects[i]
+        embed.add_field(name=field_names[8], value='```' + effect_split[0] + '```', inline=False)
+        embed.add_field(name=field_names[8]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
+    else:
+        effects = descriptions[9].splitlines(True)
+        effect_split = ''
+        for i in range(len(descriptions[9].splitlines())):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split = effect_split + effects[i]
+        embed.add_field(name=field_names[8], value='```' + effect_split + '```', inline=False)
+
+    return embed
 
 def create_embed_social(skill_name, field_names, descriptions):
     embed = discord.Embed()
@@ -161,6 +207,56 @@ def create_embed_knowledge_skill(skill_name, field_names, descriptions):
     # print(len(total))
 
     return embed
+def format_trait_eye(worksheet, skill_name, position):
+    desc = ["","","","","","","","","",""]
+    field_names = ["","","","","","","","",""]
+    position = str(position)
+    field_names[0] = level_cost = "Level Cost:"
+    field_names[1] = level_limit = "Level Limit:"
+    field_names[2] = disallowed = "Disallowed:"
+    field_names[3] = type = "Type:"
+    field_names[5] = requirements = "Requirements:"
+    field_names[6] = players = "Player Character(s):"
+    field_names[7] = slots = "Player Slot(s):"
+    field_names[8] = effects = "Effects:"
+
+    # Description
+    val = worksheet.acell('K' + position).value
+    desc[0] = val
+
+    # Level Cost
+    val = worksheet.acell('C' + position).value
+    desc[1] = val
+
+    # Level Limit
+    val = worksheet.acell('D' + position).value
+    desc[2] = val
+
+    # Disallowed
+    val = worksheet.acell('E' + position).value
+    desc[3] = val
+
+    # Type
+    val = worksheet.acell('I' + position).value
+    desc[4] = val
+
+    # Requirements
+    val = worksheet.acell('F' + position).value
+    desc[6] = val
+
+    # Players
+    val = worksheet.acell('G' + position).value
+    desc[7] = val
+
+    # Slots
+    val = worksheet.acell('H' + position).value
+    desc[8] = val
+
+    # Effects
+    val = worksheet.acell('J' + position).value
+    desc[9] = val
+
+    return create_embed_eye(skill_name, field_names, desc)
 
 def format_trait_social(worksheet, skill_name, position):
     desc = ["","","","","","","","","",""]
