@@ -23,6 +23,11 @@ trait_worksheet = sheet.get_worksheet(0)
 character_worksheet = sheet.get_worksheet(1)
 gear_worksheet = sheet.get_worksheet(2)
 
+# Dictionary of descriptor count not counting trait type and name
+dictionary = {"Knowledge": 6, "Skill": 6, "Social": 10, "Third Eye": 9, "Sink": 5, "Equipment": 12, "Advanced Equipment": 15}
+
+sink_descriptors = ["Level Cost", "Requirements", "Type", "Effects"]
+
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -38,6 +43,11 @@ class MyClient(discord.Client):
             if position[1] == "trait":
                 # check for trait type
                 trait_type = trait_worksheet.acell('B' + str(position[0])).value
+
+                # general formatting incomplete
+                # embed_var = format_trait_general(trait_worksheet, data, position[0], trait_type)
+                # await message.channel.send(embed=embed_var)
+
                 if trait_type == "Knowledge" or trait_type == "Skill":
                     embed_var = format_trait_knowledge_skill(trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
@@ -47,15 +57,19 @@ class MyClient(discord.Client):
                 elif trait_type == "Third Eye":
                     embed_var = format_trait_eye(trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
+                # testing general application
                 elif trait_type == "Sink":
-                    embed_var = format_trait_sink(trait_worksheet, data, position[0])
+                    embed_var = format_trait_general(sink_descriptors, trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
-                elif trait_type == "Equipment":
-                    embed_var = format_trait_equip(trait_worksheet, data, position[0])
-                    await message.channel.send(embed=embed_var)
-                elif trait_type == "Advanced Equipment":
-                    embed_var = format_trait_adv_equip(trait_worksheet, data, position[0])
-                    await message.channel.send(embed=embed_var)
+                # elif trait_type == "Sink":
+                #     embed_var = format_trait_sink(trait_worksheet, data, position[0])
+                #     await message.channel.send(embed=embed_var)
+                # elif trait_type == "Equipment":
+                #     embed_var = format_trait_equip(trait_worksheet, data, position[0])
+                #     await message.channel.send(embed=embed_var)
+                # elif trait_type == "Advanced Equipment":
+                #     embed_var = format_trait_adv_equip(trait_worksheet, data, position[0])
+                #     await message.channel.send(embed=embed_var)
 
             if position[1] == "character":
                 image = format_name(character_worksheet, position[0])
@@ -352,6 +366,61 @@ def format_trait_knowledge_skill(worksheet, skill_name, position):
     print(x)
 
     return create_embed_knowledge_skill(skill_name, field_names, desc)
+
+def format_trait_general(field_names, worksheet, skill_name, position):
+    desc = [None] * (len(field_names) + 1)
+    position = str(position)
+
+    # Description
+    val = worksheet.acell('C' + position).value
+    desc[0] = val
+
+    # Level Cost
+    val = worksheet.acell('D' + position).value
+    desc[1] = val
+
+    # Requirements
+    val = worksheet.acell('E' + position).value
+    desc[2] = val
+
+    # Type
+    val = worksheet.acell('F' + position).value
+    desc[3] = val
+
+    # Effects
+    val = worksheet.acell('G' + position).value
+    desc[4] = val
+
+    return create_embed_general(skill_name, field_names, desc)
+
+def create_embed_general(skill_name, field_names, descriptions):
+    effect_position = len(descriptions)-1
+    embed = discord.Embed()
+    embed.title = skill_name
+    embed.description = descriptions[0]
+    for i in range(len(field_names)):
+        embed.add_field(name=field_names[i], value=descriptions[i+1])
+    if len(descriptions[effect_position].splitlines()) > 10:
+        effects = descriptions[effect_position].splitlines(True)
+        effect_split = ["",""]
+        for i in range(0,10):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split[0] = effect_split[0] + effects[i]
+        for i in range(10,len(descriptions[effect_position].splitlines())):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split[1] = effect_split[1] + effects[i]
+        embed.add_field(name=field_names[effect_position-1], value='```' + effect_split[0] + '```', inline=False)
+        embed.add_field(name=field_names[effect_position-1]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
+    else:
+        effects = descriptions[effect_position].splitlines(True)
+        effect_split = ''
+        for i in range(len(descriptions[effect_position].splitlines())):
+            effects[i] = format_effect_bullet(effects[i])
+            effect_split = effect_split + effects[i]
+        embed.add_field(name=field_names[effect_position-4], value='```' + effect_split + '```', inline=False)
+
+    return embed
+
 
 def format_name(worksheet, position):
     position = str(position)
