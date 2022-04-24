@@ -26,8 +26,15 @@ gear_worksheet = sheet.get_worksheet(2)
 # Dictionary of descriptor count not counting trait type and name
 dictionary = {"Knowledge": 6, "Skill": 6, "Social": 10, "Third Eye": 9, "Sink": 5, "Equipment": 12, "Advanced Equipment": 15}
 
+knowledge_descriptors = ["Level Cost", "Level Limit", "Requirements", "Type", "Effects"]
+skill_descriptors = ["Level Cost", "Level Limit", "Requirements", "Type", "Effects"]
+social_descriptors = ["Level Cost", "Level Limit", "Disallowed", "Requirements", "Player Characters", "Player Slots", "Timing", "Type", "Effects"]
+third_eye_descriptors = ["Level Cost", "Level Limit", "Disallowed", "Requirements", "Player Characters", "Player Slots", "Type", "Effects"]
 sink_descriptors = ["Level Cost", "Requirements", "Type", "Effects"]
+equip_descriptors = ["Disallowed", "Equipment" "Slot", "Eye Compatibility", "Level" "Cost", "Level Limit", "MP", "Penalty", "Placement", "Requirements", "Type", "Effects"]
+adv_equip_descriptors = ["Disallowed", "Equipment" "Slot", "Eye Compatibility", "Level" "Cost", "Level Limit", "MP", "Player Characters", "Player Slots", "Penalty", "Placement", "Producer", "Requirements", "Type", "Effects"]
 
+letter_map = {"C":0, "D":1, "E":2, "F":3, "G":4, "H":5, "I":6, "J":7, "K":8, "L":9, "M":10}
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -48,18 +55,34 @@ class MyClient(discord.Client):
                 # embed_var = format_trait_general(trait_worksheet, data, position[0], trait_type)
                 # await message.channel.send(embed=embed_var)
 
+                # if trait_type == "Knowledge" or trait_type == "Skill":
+                #     embed_var = format_trait_knowledge_skill(trait_worksheet, data, position[0])
+                #     await message.channel.send(embed=embed_var)
+                # elif trait_type == "Social":
+                #     embed_var = format_trait_social(trait_worksheet, data, position[0])
+                #     await message.channel.send(embed=embed_var)
+                # elif trait_type == "Third Eye":
+                #     embed_var = format_trait_eye(trait_worksheet, data, position[0])
+                #     await message.channel.send(embed=embed_var)
+
+                # testing general application
                 if trait_type == "Knowledge" or trait_type == "Skill":
-                    embed_var = format_trait_knowledge_skill(trait_worksheet, data, position[0])
+                    embed_var = format_trait_general(knowledge_descriptors, trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
                 elif trait_type == "Social":
-                    embed_var = format_trait_social(trait_worksheet, data, position[0])
+                    embed_var = format_trait_general(social_descriptors, trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
                 elif trait_type == "Third Eye":
-                    embed_var = format_trait_eye(trait_worksheet, data, position[0])
+                    embed_var = format_trait_general(third_eye_descriptors, trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
-                # testing general application
                 elif trait_type == "Sink":
                     embed_var = format_trait_general(sink_descriptors, trait_worksheet, data, position[0])
+                    await message.channel.send(embed=embed_var)
+                elif trait_type == "Equipment":
+                    embed_var = format_trait_general(equip_descriptors, trait_worksheet, data, position[0])
+                    await message.channel.send(embed=embed_var)
+                elif trait_type == "Advanced Equipment":
+                    embed_var = format_trait_general(adv_equip_descriptors, trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
                 # elif trait_type == "Sink":
                 #     embed_var = format_trait_sink(trait_worksheet, data, position[0])
@@ -371,25 +394,33 @@ def format_trait_general(field_names, worksheet, skill_name, position):
     desc = [None] * (len(field_names) + 1)
     position = str(position)
 
-    # Description
-    val = worksheet.acell('C' + position).value
-    desc[0] = val
+    print("length of desc: " + str(len(desc)))
 
-    # Level Cost
-    val = worksheet.acell('D' + position).value
-    desc[1] = val
+    for i in range(len(desc)):
+        starting_letter = 'C'
+        cell = chr(ord(starting_letter) + i)
+        val = worksheet.acell(cell + position).value
+        desc[i] = val
 
-    # Requirements
-    val = worksheet.acell('E' + position).value
-    desc[2] = val
-
-    # Type
-    val = worksheet.acell('F' + position).value
-    desc[3] = val
-
-    # Effects
-    val = worksheet.acell('G' + position).value
-    desc[4] = val
+    # # Description
+    # val = worksheet.acell('C' + position).value
+    # desc[0] = val
+    #
+    # # Level Cost
+    # val = worksheet.acell('D' + position).value
+    # desc[1] = val
+    #
+    # # Requirements
+    # val = worksheet.acell('E' + position).value
+    # desc[2] = val
+    #
+    # # Type
+    # val = worksheet.acell('F' + position).value
+    # desc[3] = val
+    #
+    # # Effects
+    # val = worksheet.acell('G' + position).value
+    # desc[4] = val
 
     return create_embed_general(skill_name, field_names, desc)
 
@@ -398,8 +429,9 @@ def create_embed_general(skill_name, field_names, descriptions):
     embed = discord.Embed()
     embed.title = skill_name
     embed.description = descriptions[0]
-    for i in range(len(field_names)):
+    for i in range(len(field_names)-1):
         embed.add_field(name=field_names[i], value=descriptions[i+1])
+        print(str(i) +": "+ descriptions[i])
     if len(descriptions[effect_position].splitlines()) > 10:
         effects = descriptions[effect_position].splitlines(True)
         effect_split = ["",""]
@@ -417,7 +449,7 @@ def create_embed_general(skill_name, field_names, descriptions):
         for i in range(len(descriptions[effect_position].splitlines())):
             effects[i] = format_effect_bullet(effects[i])
             effect_split = effect_split + effects[i]
-        embed.add_field(name=field_names[effect_position-4], value='```' + effect_split + '```', inline=False)
+        embed.add_field(name=field_names[effect_position-1], value='```' + effect_split + '```', inline=False)
 
     return embed
 
