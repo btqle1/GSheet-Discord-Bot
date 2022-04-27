@@ -430,15 +430,34 @@ def create_embed_general(skill_name, field_names, descriptions):
     embed.title = skill_name
     embed.description = descriptions[0]
     for i in range(len(field_names)-1):
-        embed.add_field(name=field_names[i], value=descriptions[i+1])
-        print(str(i) +": "+ descriptions[i])
-    if len(descriptions[effect_position].splitlines()) > 10:
+        if field_names[i] == "Requirements":
+            embed.add_field(name=field_names[i], value=descriptions[i + 1], inline=False)
+        else:
+            embed.add_field(name=field_names[i], value=descriptions[i+1])
+        # print(str(i) +": "+ descriptions[i])
+    # if len(descriptions[effect_position].splitlines()) > 14:
+    #     effects = descriptions[effect_position].splitlines(True)
+    #     effect_split = ["","",""]
+    #     print(len(descriptions[effect_position]))
+    #     for i in range(0,7):
+    #         effects[i] = format_effect_bullet(effects[i])
+    #         effect_split[0] = effect_split[0] + effects[i]
+    #     for i in range(7,14):
+    #         effects[i] = format_effect_bullet(effects[i])
+    #         effect_split[1] = effect_split[1] + effects[i]
+    #     for i in range(14,len(descriptions[effect_position].splitlines())):
+    #         effects[i] = format_effect_bullet(effects[i])
+    #         effect_split[2] = effect_split[2] + effects[i]
+    #     embed.add_field(name=field_names[effect_position-1], value='```' + effect_split[0] + '```', inline=False)
+    #     embed.add_field(name=field_names[effect_position-1]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
+    #     embed.add_field(name=field_names[effect_position-1]+" (cont.)", value='```' + effect_split[2] + '```', inline=False)
+    if len(descriptions[effect_position].splitlines()) > 5:
         effects = descriptions[effect_position].splitlines(True)
         effect_split = ["",""]
-        for i in range(0,10):
+        for i in range(0,7):
             effects[i] = format_effect_bullet(effects[i])
             effect_split[0] = effect_split[0] + effects[i]
-        for i in range(10,len(descriptions[effect_position].splitlines())):
+        for i in range(7,len(descriptions[effect_position].splitlines())):
             effects[i] = format_effect_bullet(effects[i])
             effect_split[1] = effect_split[1] + effects[i]
         embed.add_field(name=field_names[effect_position-1], value='```' + effect_split[0] + '```', inline=False)
