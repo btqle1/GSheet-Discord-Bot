@@ -23,9 +23,6 @@ trait_worksheet = sheet.get_worksheet(0)
 character_worksheet = sheet.get_worksheet(1)
 gear_worksheet = sheet.get_worksheet(2)
 
-# Dictionary of descriptor count not counting trait type and name
-dictionary = {"Knowledge": 6, "Skill": 6, "Social": 10, "Third Eye": 9, "Sink": 5, "Equipment": 12, "Advanced Equipment": 15}
-
 knowledge_descriptors = ["Level Cost", "Level Limit", "Requirements", "Type", "Effects"]
 skill_descriptors = ["Level Cost", "Level Limit", "Requirements", "Type", "Effects"]
 social_descriptors = ["Level Cost", "Level Limit", "Disallowed", "Requirements", "Player Characters", "Player Slots", "Timing", "Type", "Effects"]
@@ -33,8 +30,6 @@ third_eye_descriptors = ["Level Cost", "Level Limit", "Disallowed", "Requirement
 sink_descriptors = ["Level Cost", "Requirements", "Type", "Effects"]
 equip_descriptors = ["Disallowed", "Equipment" "Slot", "Eye Compatibility", "Level" "Cost", "Level Limit", "MP", "Penalty", "Placement", "Requirements", "Type", "Effects"]
 adv_equip_descriptors = ["Disallowed", "Equipment" "Slot", "Eye Compatibility", "Level" "Cost", "Level Limit", "MP", "Player Characters", "Player Slots", "Penalty", "Placement", "Producer", "Requirements", "Type", "Effects"]
-
-letter_map = {"C":0, "D":1, "E":2, "F":3, "G":4, "H":5, "I":6, "J":7, "K":8, "L":9, "M":10}
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -51,21 +46,6 @@ class MyClient(discord.Client):
                 # check for trait type
                 trait_type = trait_worksheet.acell('B' + str(position[0])).value
 
-                # general formatting incomplete
-                # embed_var = format_trait_general(trait_worksheet, data, position[0], trait_type)
-                # await message.channel.send(embed=embed_var)
-
-                # if trait_type == "Knowledge" or trait_type == "Skill":
-                #     embed_var = format_trait_knowledge_skill(trait_worksheet, data, position[0])
-                #     await message.channel.send(embed=embed_var)
-                # elif trait_type == "Social":
-                #     embed_var = format_trait_social(trait_worksheet, data, position[0])
-                #     await message.channel.send(embed=embed_var)
-                # elif trait_type == "Third Eye":
-                #     embed_var = format_trait_eye(trait_worksheet, data, position[0])
-                #     await message.channel.send(embed=embed_var)
-
-                # testing general application
                 if trait_type == "Knowledge" or trait_type == "Skill":
                     embed_var = format_trait_general(knowledge_descriptors, trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
@@ -84,15 +64,6 @@ class MyClient(discord.Client):
                 elif trait_type == "Advanced Equipment":
                     embed_var = format_trait_general(adv_equip_descriptors, trait_worksheet, data, position[0])
                     await message.channel.send(embed=embed_var)
-                # elif trait_type == "Sink":
-                #     embed_var = format_trait_sink(trait_worksheet, data, position[0])
-                #     await message.channel.send(embed=embed_var)
-                # elif trait_type == "Equipment":
-                #     embed_var = format_trait_equip(trait_worksheet, data, position[0])
-                #     await message.channel.send(embed=embed_var)
-                # elif trait_type == "Advanced Equipment":
-                #     embed_var = format_trait_adv_equip(trait_worksheet, data, position[0])
-                #     await message.channel.send(embed=embed_var)
 
             if position[1] == "character":
                 image = format_name(character_worksheet, position[0])
@@ -101,6 +72,7 @@ class MyClient(discord.Client):
             if position[1] == "gear":
                 image = format_name(gear_worksheet, position[0])
                 await message.channel.send(image)
+                
             # asdf is for testing
             if position[1] == "asdf":
                 embed_var = discord.Embed(title="adf", description="adsf", color=0x4000FF)
@@ -123,273 +95,6 @@ def format_effect_bullet(effect_line):
         combined_effect_line = combined_effect_line + effect_line[i] + '\n'
     return combined_effect_line
 
-def create_embed_eye(skill_name, field_names, descriptions):
-    embed = discord.Embed()
-    embed.title = skill_name
-    embed.description = descriptions[0]
-    embed.add_field(name=field_names[0], value=descriptions[1])
-    embed.add_field(name=field_names[1], value=descriptions[2])
-    embed.add_field(name=field_names[2], value=descriptions[3])
-    embed.add_field(name=field_names[3], value=descriptions[4])
-    embed.add_field(name=field_names[4], value=descriptions[5])
-    embed.add_field(name=field_names[5], value=descriptions[6], inline=False)
-    embed.add_field(name=field_names[6], value=descriptions[7])
-    embed.add_field(name=field_names[7], value=descriptions[8])
-
-    if len(descriptions[9].splitlines()) > 10:
-        effects = descriptions[9].splitlines(True)
-        effect_split = ["",""]
-        for i in range(0,10):
-            effects[i] = format_effect_bullet(effects[i])
-            effect_split[0] = effect_split[0] + effects[i]
-        for i in range(10,len(descriptions[9].splitlines())):
-            effects[i] = format_effect_bullet(effects[i])
-            effect_split[1] = effect_split[1] + effects[i]
-        embed.add_field(name=field_names[8], value='```' + effect_split[0] + '```', inline=False)
-        embed.add_field(name=field_names[8]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
-    else:
-        effects = descriptions[9].splitlines(True)
-        effect_split = ''
-        for i in range(len(descriptions[9].splitlines())):
-            effects[i] = format_effect_bullet(effects[i])
-            effect_split = effect_split + effects[i]
-        embed.add_field(name=field_names[8], value='```' + effect_split + '```', inline=False)
-
-    return embed
-
-def create_embed_social(skill_name, field_names, descriptions):
-    embed = discord.Embed()
-    embed.title = skill_name
-    embed.description = descriptions[0]
-    embed.add_field(name=field_names[0], value=descriptions[1])
-    embed.add_field(name=field_names[1], value=descriptions[2])
-    embed.add_field(name=field_names[2], value=descriptions[3])
-    embed.add_field(name=field_names[3], value=descriptions[4])
-    embed.add_field(name=field_names[4], value=descriptions[5])
-    embed.add_field(name=field_names[5], value=descriptions[6], inline=False)
-    embed.add_field(name=field_names[6], value=descriptions[7])
-    embed.add_field(name=field_names[7], value=descriptions[8])
-
-    if len(descriptions[9].splitlines()) > 10:
-        effects = descriptions[9].splitlines(True)
-        effect_split = ["",""]
-        for i in range(0,10):
-            effects[i] = format_effect_bullet(effects[i])
-            effect_split[0] = effect_split[0] + effects[i]
-        for i in range(10,len(descriptions[9].splitlines())):
-            effects[i] = format_effect_bullet(effects[i])
-            effect_split[1] = effect_split[1] + effects[i]
-        embed.add_field(name=field_names[8], value='```' + effect_split[0] + '```', inline=False)
-        embed.add_field(name=field_names[8]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
-    else:
-        effects = descriptions[9].splitlines(True)
-        effect_split = ''
-        for i in range(len(descriptions[9].splitlines())):
-            effects[i] = format_effect_bullet(effects[i])
-            effect_split = effect_split + effects[i]
-        embed.add_field(name=field_names[8], value='```' + effect_split + '```', inline=False)
-
-    return embed
-
-def create_embed_knowledge_skill(skill_name, field_names, descriptions):
-    embed = discord.Embed()
-    embed.title = skill_name
-    embed.description = descriptions[0]
-    embed.add_field(name=field_names[0], value=descriptions[1])
-    embed.add_field(name=field_names[1], value=descriptions[2])
-    embed.add_field(name=field_names[3], value=descriptions[4])
-    embed.add_field(name=field_names[2], value=descriptions[3], inline=False)
-    desc_split_check = len(descriptions[5].splitlines())
-
-    if desc_split_check > 8:
-        effects = descriptions[5].splitlines(True)
-        effect_split = ["","",""]
-        for i in range(0, 8):
-            effects[i] = format_effect_bullet(effects[i])
-            effect_split[0] = effect_split[0] + effects[i]
-        if desc_split_check > 14:
-            for i in range(8, 14):
-                effects[i] = format_effect_bullet(effects[i])
-                effect_split[1] = effect_split[1] + effects[i]
-            for i in range(14, len(descriptions[5].splitlines())):
-                effects[i] = format_effect_bullet(effects[i])
-                effect_split[2] = effect_split[2] + effects[i]
-        else:
-            for i in range(8, len(descriptions[5].splitlines())):
-                effects[i] = format_effect_bullet(effects[i])
-                effect_split[1] = effect_split[1] + effects[i]
-        embed.add_field(name=field_names[4], value='```' + effect_split[0] + '```', inline=False)
-        embed.add_field(name=field_names[4]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
-    else:
-        effects = descriptions[5].splitlines(True)
-        effect_split = ''
-        for i in range(len(descriptions[5].splitlines())):
-            effects[i] = format_effect_bullet(effects[i])
-            effect_split = effect_split + effects[i]
-        embed.add_field(name=field_names[4], value='```' + effect_split + '```', inline=False)
-
-    # Used to get the length of entire discord embed
-    # # embed would be the discord.Embed instance
-    # fields = [embed.title, embed.description, embed.footer.text, embed.author.name]
-    #
-    # fields.extend([field.name for field in embed.fields])
-    # fields.extend([field.value for field in embed.fields])
-    #
-    # total = ""
-    # for item in fields:
-    #     # If we str(discord.Embed.Empty) we get 'Embed.Empty', when
-    #     # we just want an empty string...
-    #     total += str(item) if str(item) != 'Embed.Empty' else ''
-
-    # print(len(total))
-
-    return embed
-def format_trait_eye(worksheet, skill_name, position):
-    desc = ["","","","","","","","","",""]
-    field_names = ["","","","","","","","",""]
-    position = str(position)
-    field_names[0] = level_cost = "Level Cost:"
-    field_names[1] = level_limit = "Level Limit:"
-    field_names[2] = disallowed = "Disallowed:"
-    field_names[3] = type = "Type:"
-    field_names[5] = requirements = "Requirements:"
-    field_names[6] = players = "Player Character(s):"
-    field_names[7] = slots = "Player Slot(s):"
-    field_names[8] = effects = "Effects:"
-
-    # Description
-    val = worksheet.acell('K' + position).value
-    desc[0] = val
-
-    # Level Cost
-    val = worksheet.acell('C' + position).value
-    desc[1] = val
-
-    # Level Limit
-    val = worksheet.acell('D' + position).value
-    desc[2] = val
-
-    # Disallowed
-    val = worksheet.acell('E' + position).value
-    desc[3] = val
-
-    # Type
-    val = worksheet.acell('I' + position).value
-    desc[4] = val
-
-    # Requirements
-    val = worksheet.acell('F' + position).value
-    desc[6] = val
-
-    # Players
-    val = worksheet.acell('G' + position).value
-    desc[7] = val
-
-    # Slots
-    val = worksheet.acell('H' + position).value
-    desc[8] = val
-
-    # Effects
-    val = worksheet.acell('J' + position).value
-    desc[9] = val
-
-    return create_embed_eye(skill_name, field_names, desc)
-
-def format_trait_social(worksheet, skill_name, position):
-    desc = ["","","","","","","","","",""]
-    field_names = ["","","","","","","","",""]
-    position = str(position)
-    field_names[0] = level_cost = "Level Cost:"
-    field_names[1] = level_limit = "Level Limit:"
-    field_names[2] = disallowed = "Disallowed:"
-    field_names[3] = type = "Type:"
-    field_names[4] = timing = "Timing:"
-    field_names[5] = requirements = "Requirements:"
-    field_names[6] = players = "Player Character(s):"
-    field_names[7] = slots = "Player Slot(s):"
-    field_names[8] = effects = "Effects:"
-
-    # Description
-    val = worksheet.acell('L' + position).value
-    desc[0] = val
-
-    # Level Cost
-    val = worksheet.acell('C' + position).value
-    desc[1] = val
-
-    # Level Limit
-    val = worksheet.acell('D' + position).value
-    desc[2] = val
-
-    # Disallowed
-    val = worksheet.acell('E' + position).value
-    desc[3] = val
-
-    # Type
-    val = worksheet.acell('J' + position).value
-    desc[4] = val
-
-    # Timing
-    val = worksheet.acell('I' + position).value
-    desc[5] = val
-
-    # Requirements
-    val = worksheet.acell('F' + position).value
-    desc[6] = val
-
-    # Players
-    val = worksheet.acell('G' + position).value
-    desc[7] = val
-
-    # Slots
-    val = worksheet.acell('H' + position).value
-    desc[8] = val
-
-    # Effects
-    val = worksheet.acell('K' + position).value
-    desc[9] = val
-
-    return create_embed_social(skill_name, field_names, desc)
-
-def format_trait_knowledge_skill(worksheet, skill_name, position):
-    desc = ["","","","","",""]
-    field_names = ["","","","",""]
-    position = str(position)
-    field_names[0] = level_cost = "Level Cost:"
-    field_names[1] = level_limit = "Level Limit:"
-    field_names[2] = requirements = "Requirements:"
-    field_names[3] = type = "Type:"
-    field_names[4] = effects = "Effects:"
-
-    # Description
-    val = worksheet.acell('H' + position).value
-    desc[0] = val
-
-    # Level Cost
-    val = worksheet.acell('C' + position).value
-    desc[1] = val
-
-    # Level Limit
-    val = worksheet.acell('D' + position).value
-    desc[2] = val
-
-    # Requirements
-    val = worksheet.acell('E' + position).value
-    desc[3] = val
-
-    # Type
-    val = worksheet.acell('F' + position).value
-    desc[4] = val
-
-    # Effects
-    val = worksheet.acell('G' + position).value
-    desc[5] = val
-
-    x = len(desc[5].splitlines())
-    print(x)
-
-    return create_embed_knowledge_skill(skill_name, field_names, desc)
-
 def format_trait_general(field_names, worksheet, skill_name, position):
     desc = [None] * (len(field_names) + 1)
     position = str(position)
@@ -401,26 +106,6 @@ def format_trait_general(field_names, worksheet, skill_name, position):
         cell = chr(ord(starting_letter) + i)
         val = worksheet.acell(cell + position).value
         desc[i] = val
-
-    # # Description
-    # val = worksheet.acell('C' + position).value
-    # desc[0] = val
-    #
-    # # Level Cost
-    # val = worksheet.acell('D' + position).value
-    # desc[1] = val
-    #
-    # # Requirements
-    # val = worksheet.acell('E' + position).value
-    # desc[2] = val
-    #
-    # # Type
-    # val = worksheet.acell('F' + position).value
-    # desc[3] = val
-    #
-    # # Effects
-    # val = worksheet.acell('G' + position).value
-    # desc[4] = val
 
     return create_embed_general(skill_name, field_names, desc)
 
@@ -434,7 +119,7 @@ def create_embed_general(skill_name, field_names, descriptions):
             embed.add_field(name=field_names[i], value=descriptions[i + 1], inline=False)
         else:
             embed.add_field(name=field_names[i], value=descriptions[i+1])
-        # print(str(i) +": "+ descriptions[i])
+    # print(str(i) +": "+ descriptions[i])
     # if len(descriptions[effect_position].splitlines()) > 14:
     #     effects = descriptions[effect_position].splitlines(True)
     #     effect_split = ["","",""]
@@ -451,7 +136,7 @@ def create_embed_general(skill_name, field_names, descriptions):
     #     embed.add_field(name=field_names[effect_position-1], value='```' + effect_split[0] + '```', inline=False)
     #     embed.add_field(name=field_names[effect_position-1]+" (cont.)", value='```' + effect_split[1] + '```', inline=False)
     #     embed.add_field(name=field_names[effect_position-1]+" (cont.)", value='```' + effect_split[2] + '```', inline=False)
-    if len(descriptions[effect_position].splitlines()) > 5:
+    if len(descriptions[effect_position].splitlines()) > 10:
         effects = descriptions[effect_position].splitlines(True)
         effect_split = ["",""]
         for i in range(0,7):
